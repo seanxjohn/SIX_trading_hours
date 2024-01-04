@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SIX Trading Hour Segment Tracker</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: #de3919;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            color: black;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            color: black;
+        }
+
+        .inactive {
+            color: grey;
+        }
+
+        .active {
+            font-weight: bold;
+            background-color: lightgreen;
+        }
+
+        .active-status {
+            color: green;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h2>SIX Trading Hour Segment Tracker</h2>
+    <table id="tradingSegments">
+        <tr>
+            <th>Trading Segment</th>
+            <th>Start Time (CET)</th>
+            <th>End Time (CET)</th>
+            <th>Additional Notes</th>
+            <th>Status</th>
+        </tr>
+        <!-- Table rows will be added by JavaScript -->
+    </table>
+
+    <script>
+        var holidays = [
+            "2024-01-01", "2024-01-02", "2024-03-29", "2024-04-01", "2024-05-01",
+            "2024-05-09", "2024-05-20", "2024-08-01", "2024-12-24", "2024-12-25",
+            "2024-12-26", "2024-12-31"
+        ];
+
+        var segments = [
+            { name: "Bonds (CHF Swiss Confederation, CHF Swiss Pfandbriefe, Non-CHF)", startTime: 830, endTime: 1700, notes: "" },
+            { name: "Blue Chip Shares, Mid-/Small-Cap Shares, Secondary Listing Shares, Sponsored Foreign Shares, Separate Trading Lines, Investment Funds, ETFs, ETFs on Bonds of the Swiss Confederation, ETPs", startTime: 900, endTime: 1730, notes: "Opening at 9:00 for SwissAtMid, Swiss EBBO, Quote on Demand, ETF/ETP QOD Europe" },
+            { name: "Sponsored Funds, Structured Products, Rights and Options", startTime: 915, endTime: 1715, notes: "" },
+            { name: "Bonds (CHF)", startTime: 930, endTime: 1730, notes: "" },
+            { name: "Sparks Shares, Global Depository Receipts", startTime: 1500, endTime: 1730, notes: "" },
+            { name: "SwissAtMid, Swiss EBBO", startTime: 900, endTime: 1720, notes: "Closing at 17:20" },
+            { name: "Quote on Demand, ETF/ETP QOD Europe", startTime: 900, endTime: 1730, notes: "Closing at 17:30" },
+            { name: "Closing Auction", startTime: 1720, endTime: 1730, notes: "" },
+            { name: "Sponsored Funds, ETFs, ETPs", startTime: 1730, endTime: 1735, notes: "" },
+            { name: "Trading -At-Last (for Blue Chip Shares, Mid-/Small-Cap Shares, Sparks Shares, Global Depository Receipts, Investment Funds)", startTime: 1730, endTime: 1740, notes: "" }
+        ];
+
+        function isHoliday(date) {
+            var formattedDate = date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
+            return holidays.includes(formattedDate);
+        }
+
+        function updateTable() {
+            var now = new Date().toLocaleString("en-US", {timeZone: "Europe/Zurich"});
+            now = new Date(now);
+            var currentTime = now.getHours() * 100 + now.getMinutes();
+            var day = now.getDay();
+
+            var table = document.getElementById("tradingSegments");
+            segments.forEach(function(segment) {
+                var isActive = currentTime >= segment.startTime && currentTime < segment.endTime && day !== 0 && day !== 6 && !isHoliday(now);
+                var row = table.insertRow();
+                row.className = isActive ? "active" : "inactive";
+
+                var cell1 = row.insertCell(0);
+                var cell2 = row.insertCell(1);
+                var cell3 = row.insertCell(2);
+                var cell4 = row.insertCell(3);
+                var cell5 = row.insertCell(4);
+
+                cell1.innerHTML = segment.name;
+                cell2.innerHTML = formatTime(segment.startTime);
+                cell3.innerHTML = formatTime(segment.endTime);
+                cell4.innerHTML = segment.notes;
+                cell5.innerHTML = isActive ? "<span class='active-status'>Active Right Now</span>" : "";
+            });
+        }
+
+        function formatTime(time) {
+            var hours = Math.floor(time / 100);
+            var minutes = time % 100;
+            return hours.toString().padStart(2, '0') + ":" + minutes.toString().padStart(2, '0');
+        }
+
+        updateTable();
+    </script>
+</body>
+</html>
